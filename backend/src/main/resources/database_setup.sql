@@ -1,4 +1,4 @@
-USE expense_tracker;
+USE expense_tracker_sem;
 
 -- Check if Category table is empty --
 SELECT * FROM category;

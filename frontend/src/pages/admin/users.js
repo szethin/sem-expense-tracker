@@ -41,7 +41,13 @@ function AdminUsersManagement() {
         await AdminService.disableOrEnableUser(userId).then(
             (response) => {
                 if (response.data.status === 'SUCCESS') {
-                    window.location.reload()
+                    // Modification: Removed window.location.reload()
+                    // Modification: Added inline state update
+                    setData(prevData => prevData.map(
+                        user => user.id === userId ? { 
+                            ...user, enabled: !user.enabled 
+                        } : user
+                    ));
                     return
                 }
                 toast.error("Failed to update user: Try again later!")

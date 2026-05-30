@@ -28,7 +28,9 @@ function useCategories() {
         getCategories()
     }, [])
 
-    return [categories, isFetching];
+    // Exposing the state setter function in the return statement
+    // Modification: Added setCategories to the array
+    return [categories, isFetching, setCategories];
 }
 
 export default useCategories;

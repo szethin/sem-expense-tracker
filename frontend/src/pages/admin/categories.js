@@ -9,14 +9,20 @@ import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast/headless";
 
 function AdminCategoriesManagement() {
-
-    const [data, isFetching] = useCategories([])
+    // Receiving the setter function from the custom hook
+    const [data, isFetching, setData] = useCategories([])
 
     const disableOrEnable = async (categoryId) => {
         await AdminService.disableOrEnableCategory(categoryId).then(
             (response) => {
                 if (response.data.status === 'SUCCESS') {
-                    window.location.reload()
+                    // Modification: Removed window.location.reload()
+                    // Modification: Added inline state update
+                    setData(prevData => prevData.map(
+                        category => category.categoryId === categoryId ? { 
+                            ...category, enabled: !category.enabled 
+                        } : category
+                    ));
                 }
             },
             (error) => {
