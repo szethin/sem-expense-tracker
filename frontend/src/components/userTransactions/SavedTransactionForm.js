@@ -106,7 +106,10 @@ function SavedTransactionForm({categories, onSubmit, isDeleting, isSaving, trans
                 <input
                     type='date'
                     value={(date.current === undefined) ? new Date().toISOString().split('T')[0] : date.current}
-                    {...register('date')}
+                    // Modification: Added required validation for date field
+                    {...register('date', {
+                        required: "Start Date is required!"
+                    })}
                 />
                 {formState.errors.date && <small>{formState.errors.date.message}</small>}
             </div>

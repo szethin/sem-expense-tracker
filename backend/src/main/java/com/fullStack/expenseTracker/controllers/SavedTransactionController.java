@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+// Modification: Added import for @Valid annotation
+import jakarta.validation.Valid; 
+
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/mywallet/saved")
@@ -22,7 +25,8 @@ public class SavedTransactionController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<ApiResponseDto<?>> createSavedTransaction(@RequestBody SavedTransactionRequestDto requestDto)
+     // Modification: Added @Valid annotation
+    public ResponseEntity<ApiResponseDto<?>> createSavedTransaction(@Valid @RequestBody SavedTransactionRequestDto requestDto)
             throws UserServiceLogicException, UserNotFoundException{
         return savedTransactionService.createSavedTransaction(requestDto);
     }
@@ -36,7 +40,8 @@ public class SavedTransactionController {
 
     @PutMapping("/")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<ApiResponseDto<?>> editSavedTransaction(@Param("id") long id, @RequestBody SavedTransactionRequestDto requestDto)
+    // Modification: Added @Valid annotation
+    public ResponseEntity<ApiResponseDto<?>> editSavedTransaction(@Param("id") long id, @Valid @RequestBody SavedTransactionRequestDto requestDto) 
             throws UserServiceLogicException, TransactionNotFoundException {
         return savedTransactionService.editSavedTransaction(id, requestDto);
     }

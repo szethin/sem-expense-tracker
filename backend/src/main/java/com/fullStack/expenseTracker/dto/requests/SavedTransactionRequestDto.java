@@ -8,6 +8,9 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+// Modification: Added import for @NotNull validation
+import jakarta.validation.constraints.NotNull; 
+
 @Data
 @AllArgsConstructor
 public class SavedTransactionRequestDto {
@@ -21,7 +24,9 @@ public class SavedTransactionRequestDto {
 
     @Enumerated(EnumType.STRING)
     private ETransactionFrequency frequency;
-
+    
+    // Modification: Added @NotNull validation
+    @NotNull(message = "Start Date is required") 
     private LocalDate upcomingDate;
 
 }
