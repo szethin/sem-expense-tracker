@@ -23,6 +23,9 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// Modification: Added transactional annotation to improve performance
+import org.springframework.transaction.annotation.Transactional;
+
 @Component
 @Slf4j
 public class TransactionServiceImpl implements TransactionService {
@@ -58,6 +61,9 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    // Modification: set readonly = true in Transactional annotation 
+    // to ensure that the database connection remains securely open during the complex DTO data mapping
+    @Transactional(readOnly = true)
     public ResponseEntity<ApiResponseDto<?>> getTransactionsByUser(String email,
                                                                    int pageNumber, int pageSize,
                                                                    String searchKey, String sortField,
@@ -181,6 +187,9 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    // Modification: set readonly = true in Transactional annotation 
+    // to ensure that the database connection remains securely open during the complex DTO data mapping
+    @Transactional(readOnly = true)
     public ResponseEntity<ApiResponseDto<?>> getAllTransactions(int pageNumber, int pageSize, String searchKey) throws TransactionServiceLogicException {
         Pageable pageable =  PageRequest.of(pageNumber, pageSize).withSort(Sort.Direction.DESC, "transaction_id");
 
