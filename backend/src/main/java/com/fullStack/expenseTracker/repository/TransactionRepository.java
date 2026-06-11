@@ -12,27 +12,31 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+// Modification: Imported EntityGraph for optimisation
+import org.springframework.data.jpa.repository.EntityGraph;
+
 import java.util.List;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-    @Query(value = "SELECT t.*, c.category_id AS c_category_id, c.category_name AS c_category_name, " +
-            "u.id AS u_id, u.email AS u_email, " +
-            "tt.transaction_type_id AS tt_transaction_type_id, tt.transaction_type_name AS tt_transaction_type_name " +
-            "FROM transaction t JOIN category c ON t.category_id = c.category_id JOIN users u ON t.user_id = u.id " +
-            "JOIN transaction_type tt ON c.transaction_type_id = tt.transaction_type_id " +
-            "WHERE u.email = :email and tt.transaction_type_name LIKE %:transactionType% and " +
-            "(t.description LIKE %:searchKey% OR c.category_name LIKE %:searchKey%)", nativeQuery = true)
-    Page<Transaction> findByUser(String email, Pageable pageable, String searchKey, String transactionType);
+    // Modification: Inefficient native SQL queries rewritten into JPQL queries (optimised) & EntityGraph used
+    @EntityGraph(attributePaths = {"category", "category.transactionType", "user"})
+    @Query("SELECT t FROM Transaction t " +
+            "JOIN t.category c " +
+            "JOIN c.transactionType tt " +
+            "JOIN t.user u " +
+            "WHERE u.email = :email AND STR(tt.transactionTypeName) LIKE %:transactionType% AND " +
+            "(t.description LIKE %:searchKey% OR c.categoryName LIKE %:searchKey%)")
+    Page<Transaction> findByUser(@Param("email") String email, Pageable pageable, @Param("searchKey") String searchKey, @Param("transactionType") String transactionType);
 
-    @Query(value = "SELECT t.*, c.category_id AS c_category_id, c.category_name AS c_category_name, " +
-            "u.id AS u_id, u.email AS u_email, " +
-            "tt.transaction_type_id AS tt_transaction_type_id, tt.transaction_type_name AS tt_transaction_type_name " +
-            "FROM transaction t JOIN category c ON t.category_id = c.category_id JOIN users u ON t.user_id = u.id " +
-            "JOIN transaction_type tt ON c.transaction_type_id = tt.transaction_type_id " +
-            "WHERE t.description LIKE %:searchKey% OR c.category_name LIKE %:searchKey% OR " +
-            "tt.transaction_type_name LIKE %:searchKey% OR u.email LIKE %:searchKey%", nativeQuery = true)
+    @EntityGraph(attributePaths = {"category", "category.transactionType", "user"})
+    @Query("SELECT t FROM Transaction t " +
+            "JOIN t.category c " +
+            "JOIN c.transactionType tt " +
+            "JOIN t.user u " +
+            "WHERE t.description LIKE %:searchKey% OR c.categoryName LIKE %:searchKey% OR " +
+            "STR(tt.transactionTypeName) LIKE %:searchKey% OR u.email LIKE %:searchKey%")
     Page<Transaction> findAll(Pageable pageable, @Param("searchKey") String searchKey);
 
 

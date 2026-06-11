@@ -23,7 +23,8 @@ public class Transaction {
     @JsonIgnore
     private User user;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    // Modification: Category entity relationship mapping is transitioned from FetchType.EAGER to FetchType.LAZY
+    @ManyToOne(fetch = FetchType.LAZY) // lazy = fetch category data from db only when accessed
     @JoinColumn(name = "categoryId")
     private Category category;
     private String description;
