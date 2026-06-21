@@ -49,10 +49,8 @@
 }
 .dashboard-chart {
     width: 100%;
-    border: '1px solid grey';
-    height: 350px;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 10px;
     justify-content: space-between;
     margin-top: 20px;
@@ -61,13 +59,19 @@
 }
 .dashboard-chart .chart {
     width: 50%;
-    height: 100%;
+    min-width: 0;
+    min-height: 350px;
     padding: 15px;
     box-shadow: 0 0 5px var(--main);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
+}
+.dashboard-chart .chart .recharts-responsive-container {
+    flex: 1;
+    width: 100% !important;
+    min-height: 200px;
 }
 .dashboard-chart .chart .chart-top {
     width: 100%;
@@ -116,10 +120,74 @@ select {
     border-radius: 5px;
     background-color: var(--hover);
 }
-@media all and (max-width:1000px) {
-    .charts {
-        display: flex;  
-        color: #00a33c;
+
+@media all and (max-width: 992px) {
+    .dashboard-chart {
+        flex-wrap: wrap;
+        min-height: auto;
+        height: auto;
+    }
+
+    .dashboard-chart .chart {
+        width: calc(50% - 5px);
+        min-height: 320px;
+    }
+}
+
+@media all and (max-width: 768px) {
+    .details {
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .details > div {
+        flex: 1 1 calc(50% - 8px);
+        padding: 20px 15px;
+    }
+
+    .dashboard-chart {
+        flex-direction: column;
+        gap: 20px;
+        min-height: auto;
+        height: auto;
+    }
+
+    .dashboard-chart .chart {
+        width: 100%;
+        min-height: 300px;
+        height: auto;
+    }
+
+    .dashboard-chart .chart .recharts-responsive-container {
+        min-height: 240px;
+    }
+}
+
+@media all and (max-width: 480px) {
+    .details > div {
+        flex: 1 1 100%;
+    }
+
+    .details > div img {
+        height: 50px;
+        width: 50px;
+    }
+
+    .dashboard-chart .chart {
+        min-height: 280px;
+        padding: 10px;
+    }
+
+    .dashboard-chart .chart .chart-top {
+        flex-wrap: wrap;
+    }
+
+    .dashboard-chart .chart .chart-top h2 {
+        font-size: 16px;
+    }
+
+    .dashboard-chart .chart .recharts-responsive-container {
+        min-height: 220px;
     }
 }
 

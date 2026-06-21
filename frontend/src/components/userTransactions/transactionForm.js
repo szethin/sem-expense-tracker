@@ -1,13 +1,18 @@
 import { useForm } from 'react-hook-form';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ReceiptImageAttachment from './ReceiptImageAttachment';
 
 function TransactionForm({ categories, onSubmit, isDeleting, isSaving, transaction, onDelete }) {
-    // form field controll
     const { register, handleSubmit, watch, reset, formState } = useForm();
     const date = useRef({});
     date.current = watch('date');
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const [receiptData, setReceiptData] = useState({ receiptImage: null, removeReceiptImage: false });
+
+    const handleReceiptChange = useCallback((data) => {
+        setReceiptData(data);
+    }, []);
 
     useEffect(() => {
         if (transaction && transaction.transactionId) {
@@ -16,27 +21,33 @@ function TransactionForm({ categories, onSubmit, isDeleting, isSaving, transacti
                 description: transaction.description,
                 amount: transaction.amount,
                 date: transaction.date.split('T')[0]
-            })
+            });
         }
-    }, [reset, transaction])
+    }, [reset, transaction]);
 
     const deleteTransaction = (e, id) => {
-        e.preventDefault()
-        onDelete(id)
-    }
+        e.preventDefault();
+        onDelete(id);
+    };
 
     const cancelProcess = (e) => {
-        e.preventDefault()
-        navigate('/user/transactions')
-    }
+        e.preventDefault();
+        navigate('/user/transactions');
+    };
 
+    const submitForm = (formData) => {
+        onSubmit({
+            ...formData,
+            receiptImage: receiptData.receiptImage,
+            removeReceiptImage: receiptData.removeReceiptImage
+        });
+    };
 
     return (
-        <form className="auth-form t-form" onSubmit={handleSubmit(onSubmit)}>
+        <form className="auth-form t-form" onSubmit={handleSubmit(submitForm)}>
 
             <div className='input-box'>
 
-                {/* input category */}
                 <label>Transaction Category</label><br />
                 <div className='radio'>
 
@@ -51,7 +62,7 @@ function TransactionForm({ categories, onSubmit, isDeleting, isSaving, transacti
                                         {...register('category', {
                                             required: "category is required"
                                         })}
-                                    /><label for={cat.categoryName}>{cat.categoryName}</label>
+                                    /><label htmlFor={cat.categoryName}>{cat.categoryName}</label>
                                 </span>
                             )
                         })
@@ -61,7 +72,6 @@ function TransactionForm({ categories, onSubmit, isDeleting, isSaving, transacti
                 {formState.errors.category && <small>{formState.errors.category.message}</small>}
             </div>
 
-            {/* input description */}
             <div className='input-box'>
                 <label>Transaction description</label><br />
                 <input
@@ -76,7 +86,6 @@ function TransactionForm({ categories, onSubmit, isDeleting, isSaving, transacti
                 {formState.errors.description && <small>{formState.errors.description.message}</small>}
             </div>
 
-            {/* input amount */}
             <div className='input-box'>
                 <label>Amount</label><br />
                 <input
@@ -89,7 +98,6 @@ function TransactionForm({ categories, onSubmit, isDeleting, isSaving, transacti
                 {formState.errors.amount && <small>{formState.errors.amount.message}</small>}
             </div>
 
-            {/* input date */}
             <div className='input-box'>
                 <label>Date</label><br />
                 <input
@@ -99,6 +107,11 @@ function TransactionForm({ categories, onSubmit, isDeleting, isSaving, transacti
                 />
                 {formState.errors.date && <small>{formState.errors.date.message}</small>}
             </div>
+
+            <ReceiptImageAttachment
+                existingImageBase64={transaction?.receiptImage}
+                onChange={handleReceiptChange}
+            />
 
             <div className='t-btn input-box'>
                 <input type='submit' value={isSaving ? "Saving..." : 'Save transaction'}

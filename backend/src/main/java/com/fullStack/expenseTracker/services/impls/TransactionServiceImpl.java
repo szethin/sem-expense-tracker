@@ -8,6 +8,7 @@ import com.fullStack.expenseTracker.services.TransactionService;
 import com.fullStack.expenseTracker.services.UserService;
 import com.fullStack.expenseTracker.dto.requests.TransactionRequestDto;
 import com.fullStack.expenseTracker.models.Transaction;
+import com.fullStack.expenseTracker.models.TransactionReceipt;
 import com.fullStack.expenseTracker.repository.TransactionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Base64;
 
 // Modification: Added transactional annotation to improve performance
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Slf4j
 public class TransactionServiceImpl implements TransactionService {
+
+    private static final int MAX_RECEIPT_IMAGE_SIZE = 10 * 1024 * 1024;
 
     @Autowired
     TransactionRepository transactionRepository;
@@ -40,10 +44,17 @@ public class TransactionServiceImpl implements TransactionService {
     CategoryService categoryService;
 
     @Override
+    @Transactional
     public ResponseEntity<ApiResponseDto<?>> addTransaction(TransactionRequestDto transactionRequestDto)
             throws UserNotFoundException, CategoryNotFoundException, TransactionServiceLogicException {
         Transaction transaction = TransactionRequestDtoToTransaction(transactionRequestDto);
         try {
+            if (transactionRequestDto.getReceiptImage() != null && !transactionRequestDto.getReceiptImage().isBlank()) {
+                TransactionReceipt receipt = new TransactionReceipt();
+                receipt.setTransaction(transaction);
+                receipt.setImageData(decodeReceiptImage(transactionRequestDto.getReceiptImage()));
+                transaction.setReceipt(receipt);
+            }
             transactionRepository.save(transaction);
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     new ApiResponseDto<>(
@@ -55,6 +66,9 @@ public class TransactionServiceImpl implements TransactionService {
 
         }catch(Exception e) {
             log.error("Error happen when adding new transaction: " + e.getMessage());
+            if (e instanceof TransactionServiceLogicException) {
+                throw (TransactionServiceLogicException) e;
+            }
             throw new TransactionServiceLogicException("Failed to record your new transaction, Try again later!");
         }
 
@@ -120,6 +134,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<ApiResponseDto<?>> getTransactionById(Long transactionId)
             throws TransactionNotFoundException {
         Transaction transaction = transactionRepository.findById(transactionId).orElseThrow(
@@ -130,11 +145,13 @@ public class TransactionServiceImpl implements TransactionService {
                 new ApiResponseDto<>(
                         ApiResponseStatus.SUCCESS,
                         HttpStatus.OK,
-                        transactionToTransactionResponseDto(transaction)
+                        transactionToTransactionResponseDto(transaction, true)
                 )
         );
     }
 
+    @Override
+    @Transactional
     public ResponseEntity<ApiResponseDto<?>> updateTransaction(Long transactionId, TransactionRequestDto transactionRequestDto)
             throws TransactionNotFoundException, UserNotFoundException, CategoryNotFoundException, TransactionServiceLogicException {
 
@@ -148,6 +165,20 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setCategory(categoryService.getCategoryById(transactionRequestDto.getCategoryId()));
         transaction.setDescription(transactionRequestDto.getDescription());
 
+        if (transactionRequestDto.getReceiptImage() != null && !transactionRequestDto.getReceiptImage().isBlank()) {
+            byte[] imageData = decodeReceiptImage(transactionRequestDto.getReceiptImage());
+            if (transaction.getReceipt() == null) {
+                TransactionReceipt receipt = new TransactionReceipt();
+                receipt.setTransaction(transaction);
+                receipt.setImageData(imageData);
+                transaction.setReceipt(receipt);
+            } else {
+                transaction.getReceipt().setImageData(imageData);
+            }
+        } else if (Boolean.TRUE.equals(transactionRequestDto.getRemoveReceiptImage())) {
+            transaction.setReceipt(null);
+        }
+
         try {
             transactionRepository.save(transaction);
             return ResponseEntity.status(HttpStatus.OK).body(
@@ -159,6 +190,9 @@ public class TransactionServiceImpl implements TransactionService {
             );
         }catch(Exception e) {
             log.error("Error happen when retrieving transactions of a user: " + e.getMessage());
+            if (e instanceof TransactionServiceLogicException) {
+                throw (TransactionServiceLogicException) e;
+            }
             throw new TransactionServiceLogicException("Failed to update your transactions! Try again later");
         }
 
@@ -191,7 +225,7 @@ public class TransactionServiceImpl implements TransactionService {
     // to ensure that the database connection remains securely open during the complex DTO data mapping
     @Transactional(readOnly = true)
     public ResponseEntity<ApiResponseDto<?>> getAllTransactions(int pageNumber, int pageSize, String searchKey) throws TransactionServiceLogicException {
-        Pageable pageable =  PageRequest.of(pageNumber, pageSize).withSort(Sort.Direction.DESC, "transaction_id");
+        Pageable pageable =  PageRequest.of(pageNumber, pageSize).withSort(Sort.Direction.DESC, "transactionId");
 
         Page<Transaction> transactions = transactionRepository.findAll(pageable, searchKey);
 
@@ -243,6 +277,15 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     private TransactionResponseDto transactionToTransactionResponseDto(Transaction transaction) {
+        return transactionToTransactionResponseDto(transaction, false);
+    }
+
+    private TransactionResponseDto transactionToTransactionResponseDto(Transaction transaction, boolean includeReceiptImage) {
+        String receiptImage = null;
+        if (includeReceiptImage && transaction.getReceipt() != null) {
+            receiptImage = encodeReceiptImage(transaction.getReceipt().getImageData());
+        }
+
         return new TransactionResponseDto(
                 transaction.getTransactionId(),
                 transaction.getCategory().getCategoryId(),
@@ -251,8 +294,33 @@ public class TransactionServiceImpl implements TransactionService {
                 transaction.getDescription(),
                 transaction.getAmount(),
                 transaction.getDate(),
-                transaction.getUser().getEmail()
+                transaction.getUser().getEmail(),
+                receiptImage
         );
+    }
+
+    private byte[] decodeReceiptImage(String base64Image) throws TransactionServiceLogicException {
+        String cleaned = base64Image.trim();
+        if (cleaned.contains(",")) {
+            cleaned = cleaned.substring(cleaned.indexOf(",") + 1);
+        }
+
+        try {
+            byte[] decoded = Base64.getDecoder().decode(cleaned);
+            if (decoded.length > MAX_RECEIPT_IMAGE_SIZE) {
+                throw new TransactionServiceLogicException("Receipt image must not exceed 10MB!");
+            }
+            return decoded;
+        } catch (IllegalArgumentException e) {
+            throw new TransactionServiceLogicException("Invalid receipt image format!");
+        }
+    }
+
+    private String encodeReceiptImage(byte[] receiptImage) {
+        if (receiptImage == null || receiptImage.length == 0) {
+            return null;
+        }
+        return Base64.getEncoder().encodeToString(receiptImage);
     }
 
     private Map<String, List<TransactionResponseDto>> groupTransactionsByDate(List<TransactionResponseDto> transactionResponseDtoList) {

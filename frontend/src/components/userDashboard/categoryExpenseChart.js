@@ -6,14 +6,14 @@ function CategoryExpenseChart({ categorySummary }) {
 
     return (
         <div className='chart'>
-            <ResponsiveContainer>
-                <PieChart width={50} height={100}>
+            <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
                     <Pie
                         data={categorySummary}
-                        cx={280}
-                        cy={135}
-                        innerRadius={80}
-                        outerRadius={110}
+                        cx="50%"
+                        cy="45%"
+                        innerRadius="35%"
+                        outerRadius="50%"
                         fill="#8884d8"
                         paddingAngle={0}
                         dataKey="amount"

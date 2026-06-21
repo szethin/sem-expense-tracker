@@ -28,4 +28,6 @@ public class TransactionResponseDto {
 
     private String userEmail;
 
+    private String receiptImage;
+
 }

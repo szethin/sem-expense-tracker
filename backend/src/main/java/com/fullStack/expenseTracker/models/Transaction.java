@@ -31,6 +31,10 @@ public class Transaction {
     private double amount;
     private LocalDate date;
 
+    @OneToOne(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private TransactionReceipt receipt;
+
     public Transaction(User user, Category category, String description, double amount, LocalDate date) {
         this.user = user;
         this.category = category;

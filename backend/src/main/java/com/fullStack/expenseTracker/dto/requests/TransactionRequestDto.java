@@ -28,4 +28,8 @@ public class TransactionRequestDto {
     @NotNull(message = "Date is required!")
     private LocalDate date;
 
+    private String receiptImage;
+
+    private Boolean removeReceiptImage;
+
 }

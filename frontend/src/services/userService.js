@@ -12,16 +12,22 @@ const get_categories = () => {
     )
 }
 
-const add_transaction = (email, categoryId, descripiton, amount, date) => {
+const add_transaction = (email, categoryId, descripiton, amount, date, receiptImage) => {
+    const payload = {
+        userEmail: email,
+        categoryId: categoryId,
+        description: descripiton,
+        amount: amount,
+        date: date
+    };
+
+    if (receiptImage) {
+        payload.receiptImage = receiptImage;
+    }
+
     return axios.post(
         API_BASE_URL + '/transaction/new', 
-        {
-            userEmail: email,
-            categoryId: categoryId,
-            description:descripiton,
-            amount: amount,
-            date: date 
-        },
+        payload,
         {
             headers: AuthService.authHeader()
         }
@@ -51,15 +57,25 @@ const get_single_transaction = (id) => {
         }
     )
 }
-const update_transaction = (transactionId, email, categoryId, descripiton, amount, date) => {
+const update_transaction = (transactionId, email, categoryId, descripiton, amount, date, receiptImage, removeReceiptImage) => {
+    const payload = {
+        userEmail: email,
+        categoryId: categoryId,
+        description: descripiton,
+        amount: amount,
+        date: date
+    };
+
+    if (receiptImage) {
+        payload.receiptImage = receiptImage;
+    }
+
+    if (removeReceiptImage) {
+        payload.removeReceiptImage = true;
+    }
+
     return axios.put(API_BASE_URL + '/transaction/update', 
-        {
-            userEmail: email,
-            categoryId: categoryId,
-            description:descripiton,
-            amount: amount,
-            date: date 
-        },
+        payload,
         {
             headers: AuthService.authHeader(),
             params: {

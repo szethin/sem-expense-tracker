@@ -30,7 +30,7 @@ function NewTransaction() {
     const onSubmit = async (data) => {
         setIsSaving(true)
         await UserService.add_transaction(
-            AuthService.getCurrentUser().email, data.category, data.description, data.amount, data.date
+            AuthService.getCurrentUser().email, data.category, data.description, data.amount, data.date, data.receiptImage
         ).then(
             (response) => {
                 if (response.data.status === "SUCCESS") {

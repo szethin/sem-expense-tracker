@@ -59,7 +59,7 @@ function EditTransaction() {
     const onSubmit = async (data) => {
         setIsSaving(true)
         await UserService.update_transaction(
-            transactionId, AuthService.getCurrentUser().email, data.category, data.description, data.amount, data.date
+            transactionId, AuthService.getCurrentUser().email, data.category, data.description, data.amount, data.date, data.receiptImage, data.removeReceiptImage
         ).then(
             (response) => {
                 if (response.data.status === "SUCCESS") {

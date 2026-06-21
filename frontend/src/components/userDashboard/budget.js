@@ -37,16 +37,16 @@ function Budget({totalExpense, budgetAmount, saveBudget, currentMonth}) {
                         (currentMonth.id === new Date().getMonth() + 1) && ( <button onClick={toggleForm}>Edit</button> )
                     }
                 </div>
-                <ResponsiveContainer height={220}>
-                    <PieChart width={50} height={100}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
                         <Pie
                             data={data2}
-                            cx={280}
-                            cy={140}
+                            cx="50%"
+                            cy="65%"
                             startAngle={180}
                             endAngle={0}
-                            innerRadius={80}
-                            outerRadius={110}
+                            innerRadius="45%"
+                            outerRadius="60%"
                             fill="#8884d8"
                             paddingAngle={0}
                             dataKey="value"
