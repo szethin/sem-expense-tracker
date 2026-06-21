@@ -21,6 +21,7 @@
 - Developed intuitive user dashboards, transaction management, upcoming/recurring transactions tracking, monthly summaries, and statistics, budget management.
 - Developed categories, users and transactions management for administrators.
 - Implemented management capabilities including search, filter and pagination.
+- **[NEW] Added Receipt/Image Attachment feature, allowing users to securely upload or capture transaction receipts (up to 10MB) directly from their devices**
 
 ## How to run?
 
@@ -46,6 +47,8 @@ spring.datasource.password=YOUR_PASSWORD
 spring.mail.username=YOUR_USERNAME
 spring.mail.password=YOUR_PASSWORD
 ```
+- **Note for Image Uploads:** Since transaction receipts are stored as `LONGBLOB` data, ensure your MySQL `max_allowed_packet` configuration is set to accept at least 10MB payloads to prevent upload failures.
+
 
 ### Step 3: Run the backend.
 
@@ -75,6 +78,12 @@ To get started create a new account using your email.
 
 ## Screenshots
 
+**Receipt & Image Attachment (New Feature)**
+*Users can now upload or capture receipt images directly when adding or editing a transaction.*
+![New Transaction with Receipt](frontend/src/assets/screenshots/new_transaction_receipt.png)
+![New Transaction with Receipt](frontend/src/assets/screenshots/new_transaction_receipt2.png)
+
+
 ![Screenshot 2024-04-18 091658](https://github.com/DharshiBalasubramaniyam/Fullstack-Expense-Tracker/assets/139672976/7637b70d-8b9f-485e-84f6-bce3c940f3f2)
 ![Screenshot 2024-04-18 091720](https://github.com/DharshiBalasubramaniyam/Fullstack-Expense-Tracker/assets/139672976/f58e2e13-7db4-439a-b371-ce9b6e5838c7)
 ![Screenshot 2024-04-18 091743](https://github.com/DharshiBalasubramaniyam/Fullstack-Expense-Tracker/assets/139672976/dbcfdbd2-d515-4197-b5ff-11ba0aed2dcf)
@@ -100,6 +109,8 @@ Admin's stuff
 ![Screenshot 2024-04-18 092342](https://github.com/DharshiBalasubramaniyam/Fullstack-Expense-Tracker/assets/139672976/5d40498e-ec3b-4559-ba15-efdf9c248d22)
 ![Screenshot 2024-04-18 092805](https://github.com/DharshiBalasubramaniyam/Fullstack-Expense-Tracker/assets/139672976/aa94d2da-0080-421b-a191-d2ff9fb4472f)
 ![Screenshot 2024-04-18 092822](https://github.com/DharshiBalasubramaniyam/Fullstack-Expense-Tracker/assets/139672976/6cb49c2c-8317-4cec-ad16-b9496d97b16f)
+
+
 
 
 
